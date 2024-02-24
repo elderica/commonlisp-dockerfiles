@@ -2,7 +2,8 @@
 
 set -u -e
 
-VERSION=2.4.1
+VERSION="${1}" # SBCL version to install
+MODE="${2}"    # binary or source
 
 SBCL_SIGNING_KEY=D6839CA0A67F74D9DFB70922EBD595A9100D63CD
 
@@ -102,8 +103,8 @@ cleanup() {
 import_key
 download_and_decrypt_checksum
 download_and_decompress_linux_binary
-mode="${1}"
-case "${mode}" in
+
+case "${MODE}" in
      binary)
             install_linux_binary
             ;;

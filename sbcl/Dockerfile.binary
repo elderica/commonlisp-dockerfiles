@@ -1,13 +1,14 @@
 ARG BASE=debian
 
 FROM $BASE AS buildenv
+ARG SBCL_VERSION
 
 RUN apt-get update \
  && apt-get install -y gpg curl bzip2
 
 COPY install-sbcl.sh /install-sbcl.sh
 
-RUN /install-sbcl.sh binary
+RUN /install-sbcl.sh $SBCL_VERSION binary
 
 RUN apt-get purge -y gpg curl bzip2 \
  && apt-get autoremove -y \
