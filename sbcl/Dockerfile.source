@@ -3,16 +3,41 @@ ARG BASE=debian
 FROM $BASE AS buildenv
 ARG SBCL_VERSION
 
+ARG SBCL_SIGNING_KEY=D6839CA0A67F74D9DFB70922EBD595A9100D63CD
+ARG ASC_URL=https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VERSION}/sbcl-${SBCL_VERSION}-crhodes.asc
+ARG ASC_FILE=sbcl-${SBCL_VERSION}-crhodes.asc
+ARG CHECKSUM=sbcl-${SBCL_VERSION}-crhodes.txt
+
+ARG LINUX_BINARY_URL=https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VERSION}/sbcl-${SBCL_VERSION}-x86-64-linux-binary.tar.bz2
+ARG LINUX_BINARY_TARBZ2=sbcl-${SBCL_VERSION}-x86-64-linux-binary.tar.bz2
+ARG LINUX_BINARY_TAR=sbcl-${SBCL_VERSION}-x86-64-linux-binary.tar
+
+ARG SOURCE_URL=https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VERSION}/sbcl-${SBCL_VERSION}-source.tar.bz2
+ARG SOURCE_TARBZ2=sbcl-${SBCL_VERSION}-source.tar.bz2
+ARG SOURCE_TAR=sbcl-${SBCL_VERSION}-source.tar
+
 RUN apt-get update \
- && apt-get install -y gpg curl bzip2 libzstd-dev build-essential
+ && apt-get install -y gpg bzip2 libzstd-dev build-essential
 
-COPY install-sbcl.sh /install-sbcl.sh
+ADD $ASC_URL $ASC_FILE
+RUN gpg --batch --keyserver keyserver.ubuntu.com --recv-keys $SBCL_SIGNING_KEY
+RUN gpg --batch --verify $ASC_FILE
+RUN (gpg --decrypt $ASC_FILE | grep -E '\.tar$' | tee $CHECKSUM)
 
-RUN /install-sbcl.sh $SBCL_VERSION source
+ADD $LINUX_BINARY_URL $LINUX_BINARY_TARBZ2
+RUN bunzip2 -f $LINUX_BINARY_TARBZ2 \
+ && (grep $LINUX_BINARY_TAR $CHECKSUM | sha256sum -c -)
 
-RUN apt-get purge -y gpg curl bzip2 libzstd-dev build-essential \
- && apt-get autoremove -y \
- && rm -rf /var/lib/apt/lists/*
+ADD $SOURCE_URL $SOURCE_TARBZ2
+RUN bunzip2 -f $SOURCE_TARBZ2 \
+ && (grep $SOURCE_TAR $CHECKSUM | sha256sum -c -)
+
+RUN tar xf $LINUX_BINARY_TAR
+RUN tar xf $SOURCE_TAR
+
+WORKDIR /sbcl-${SBCL_VERSION}
+RUN sh make.sh --fancy --xc-host=/sbcl-${SBCL_VERSION}-x86-64-linux/run-sbcl.sh
+RUN sh install.sh
 
 FROM $BASE AS runtime
 ARG QUICKLISP_SHA256=4a7a5c2aebe0716417047854267397e24a44d0cce096127411e9ce9ccfeb2c17
