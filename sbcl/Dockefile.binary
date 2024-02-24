@@ -1,0 +1,20 @@
+ARG BASE=debian
+
+FROM $BASE AS buildenv
+
+RUN apt-get update \
+ && apt-get install -y gpg curl bzip2
+
+COPY install-sbcl.sh /install-sbcl.sh
+
+RUN /install-sbcl.sh binary
+
+RUN apt-get purge -y gpg curl bzip2 \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+
+FROM $BASE AS runtime
+
+COPY --from=buildenv /usr/local /usr/local
+
+ENTRYPOINT ["/usr/local/bin/sbcl"]
