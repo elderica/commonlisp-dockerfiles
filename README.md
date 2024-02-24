@@ -18,7 +18,9 @@ $ docker run -it --rm elderica/sbcl:2.4.1-binary
 
 Build your own image
 
+You can specify implementation version!
+
 ```sh
 $ cd sbcl
-$ make binary
+$ make binary SBCL_VERSION=2.4.0
 ```
