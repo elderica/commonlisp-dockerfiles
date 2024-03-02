@@ -11,7 +11,7 @@
 From Docker Hub
 
 ```sh
-$ docker run -it --rm elderica/sbcl:2.4.1-binary
+$ docker run -it --rm elderica/sbcl:2.4.2
 * (ql:client-version)
 "2021-02-13"
 ```
@@ -22,5 +22,5 @@ You can specify implementation version!
 
 ```sh
 $ cd sbcl
-$ make binary SBCL_VERSION=2.4.0
+$ make SBCL_VERSION=2.4.0
 ```

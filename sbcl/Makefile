@@ -1,15 +1,12 @@
-.PHONY: source binary
+.PHONY: image
 
-SBCL_VERSION ?= 2.4.1
+SBCL_VERSION ?= 2.4.2
+TARGET ?= runtime-source
 
-source:
+image:
 	docker buildx build \
-		--tag elderica/sbcl:"${SBCL_VERSION}-source" \
+		--tag elderica/sbcl:latest \
+		--tag elderica/sbcl:"${SBCL_VERSION}" \
 		--build-arg SBCL_VERSION="${SBCL_VERSION}" \
-		--file Dockerfile.source .
-
-binary:
-	docker buildx build \
-		--tag elderica/sbcl:"${SBCL_VERSION}-binary" \
-		--build-arg SBCL_VERSION="${SBCL_VERSION}" \
-		--file Dockerfile.binary .
+		--target="${TARGET}" \
+		--file Dockerfile .
